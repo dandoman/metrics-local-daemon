@@ -2,6 +2,7 @@ package com.metrics.daemon.validation;
 
 import java.util.List;
 
+import com.metrics.daemon.exception.InvalidMetricException;
 import com.metrics.daemon.logic.RawLogParser;
 import com.metrics.daemon.pojo.RawStagedMetric;
 
@@ -17,14 +18,11 @@ public class LogicValidation {
 	 * @param line of data after =
 	 * @return line of data if valid or null if invalid
 	 */
-	private static boolean validVariable(String type, String line) {
+	private static void validVariable(String type, String line) {
 		//Regex for one or more non-whitespace chars
-		if (line.matches(type + "=\\S+")) {
-			return true;
+		if (!line.matches(type + "=\\S+")) {
+			throw new InvalidMetricException("Error : ");
 		} 
-		else {
-			return false;
-		}
 	}
 	
 	/**
@@ -33,46 +31,25 @@ public class LogicValidation {
 	 * @param List<String> of rawStagedMetrics.
 	 * @return True if size is 7 or else return false.
 	 */
-	private static boolean validDataSize(List<String> rawStagedMetrics) {
+	private static void validDataSize(List<String> rawStagedMetrics) {
 		final int NUMBER_OF_VARIABLES = 7;
 		if(rawStagedMetrics.size() != NUMBER_OF_VARIABLES) {
-			return false;
-		} 
-		return true;
+			throw new InvalidMetricException("Error : ");
+		}
 	}
 	
 	//Right now this is optimized for return
 	//This could however be changed to log all invalid data
 	//In other words only return once and variable == null, then log failure.
-	public static boolean validRawData(List<String> rawStagedMetrics) {
-		if(!validDataSize(rawStagedMetrics)) {
-			return false;
-		}
-		
-		//Validate each variables raw data separately
-		if(!LogicValidation.validVariable("ApplicationName", rawStagedMetrics.get(0))) {
-			return false;
-		}
-		if(!LogicValidation.validVariable("Operation", rawStagedMetrics.get(1))) {
-			return false;
-		}
-		if(!LogicValidation.validVariable("MarketPlace", rawStagedMetrics.get(2))) {
-			return false;
-		}
-		if(!LogicValidation.validVariable("HostName", rawStagedMetrics.get(3))) {
-			return false;
-		}
-		if(!LogicValidation.validVariable("StartTime",rawStagedMetrics.get(4))) {
-			return false;
-		}
-		if(!LogicValidation.validVariable("EndTime",rawStagedMetrics.get(5))) {
-			return false;
-		}
-		if(!LogicValidation.validVariable("Metrics",rawStagedMetrics.get(6))) {
-			return false;
-		}
-		
-		return true;
+	public static void validRawData(List<String> rawStagedMetrics) {
+		validDataSize(rawStagedMetrics);
+		validVariable("ApplicationName", rawStagedMetrics.get(0));
+		validVariable("Operation", rawStagedMetrics.get(1));
+		validVariable("MarketPlace", rawStagedMetrics.get(2));
+		validVariable("HostName", rawStagedMetrics.get(3));
+		validVariable("StartTime",rawStagedMetrics.get(4));
+		validVariable("EndTime",rawStagedMetrics.get(5));
+		validVariable("Metrics",rawStagedMetrics.get(6));
 	}
 	
 	/**
@@ -82,27 +59,14 @@ public class LogicValidation {
 	 * @param RawStagedMetric rawMetric
 	 * @return true if guarantees are met or else false
 	 */
-	public static boolean validRawMetric(RawStagedMetric rawMetric) {
-		if(!TypeValidation.validTime(rawMetric)) {
-			return false;
-		}
-		
-		String[] metricNameArray = RawLogParser.splitMetricNameList(rawMetric);
-		if(metricNameArray.length != 2) {
-			return false; //Maybe unnecessary validation
-		}
-		
+	public static void validRawMetric(RawStagedMetric rawMetric) {
+		TypeValidation.validTime(rawMetric);
+		List<String> metricNameArray = RawLogParser.splitMetricNameList(rawMetric);
 		for(String nameValue : metricNameArray) {
-			if(!validMetricValueFormat(nameValue)) {
-				return false;
-			}
-			
+			validMetricValueFormat(nameValue);
 			String stringValue = nameValue.split("=")[1];
-			if(!TypeValidation.validValue(stringValue)) {
-				return false;
-			}
+			TypeValidation.validValue(stringValue);
 		}
-		return true;
 	}
 	
 	/**
@@ -110,12 +74,9 @@ public class LogicValidation {
 	 * @param metricValue as a string
 	 * @return true if valid or else false
 	 */
-	private static boolean validMetricValueFormat(String metricValue) {
-		if(metricValue.matches("\\S+=\\S+")) {
-			return true;
-		}
-		else {
-			return false;
+	private static void validMetricValueFormat(String metricValue) {
+		if(!metricValue.matches("\\S+=\\S+")) {
+			throw new InvalidMetricException("Error : ");
 		}
 	}
 }

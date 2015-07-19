@@ -1,12 +1,24 @@
 package com.metrics.daemon.logic;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import com.metrics.daemon.pojo.RawStagedMetric;
 import com.metrics.daemon.pojo.StagedMetric;
+import com.metrics.daemon.validation.LogicValidation;
 
 public class RawLogParser {
+	
+	/**
+	 * Delimit the raw log by semicolons and return this array as a 
+	 * List<String>.
+	 * @param rawLog to be delimited
+	 * @return List<String> of semicolon delimited log
+	 */
+	public static List<String> semicolonDelimit(String rawLog) {
+		return Arrays.<String>asList(rawLog.split(";"));
+	}
 	
 	/**
 	 * Splits up raw log using = delimeter populates a rawStagedMetric.
@@ -14,22 +26,25 @@ public class RawLogParser {
 	 * @param List<String> rawLog for one metric.
 	 * @return RawStagedMetric with valid input.
 	 */
-	public static RawStagedMetric buildRawStagedMetric(List<String> rawLog) {
+	public static RawStagedMetric buildRawStagedMetric(String rawLog) {
+		List<String> rawMetric = semicolonDelimit(rawLog);
+		LogicValidation.validRawData(rawMetric);
+		
 		RawStagedMetric newRawMetric = new RawStagedMetric();
 		
-		String applicationName = rawLog.get(0).split("=")[1];
+		String applicationName = rawMetric.get(0).split("=")[1];
 		newRawMetric.setApplicationName(applicationName);
-		String operation = rawLog.get(1).split("=")[1];
+		String operation = rawMetric.get(1).split("=")[1];
 		newRawMetric.setOperation(operation);
-		String marketPlace = rawLog.get(2).split("=")[1];
+		String marketPlace = rawMetric.get(2).split("=")[1];
 		newRawMetric.setMarketplace(marketPlace);
-		String hostName = rawLog.get(3).split("=")[1];
+		String hostName = rawMetric.get(3).split("=")[1];
 		newRawMetric.setHostName(hostName);
-		String startTime = rawLog.get(4).split("=")[1];
+		String startTime = rawMetric.get(4).split("=")[1];
 		newRawMetric.setStartTime(startTime);
-		String endTime = rawLog.get(5).split("=")[1];
+		String endTime = rawMetric.get(5).split("=")[1];
 		newRawMetric.setEndTime(endTime);
-		String metricNameValue = rawLog.get(6).split("=")[1];
+		String metricNameValue = rawMetric.get(6).split("=")[1];
 		newRawMetric.setMetricNameValue(metricNameValue);
 		
 		return newRawMetric;
@@ -37,11 +52,16 @@ public class RawLogParser {
 	
 	/**
 	 * RawStagedMetric of strings is converted into a stagedMetric of types.
-	 * This function assumes that the RawStagedMetric has already been validated.
 	 * @param RawStagedMetric object
 	 * @return List<StagedMetric> depending on how many metrics in given list
 	 */
 	public static List<StagedMetric> rawToStagedMetricList(RawStagedMetric raw) {
+		//Validated here
+		LogicValidation.validRawMetric(raw);
+		
+		//TODO
+		//Use a HashMap to store metric-(name/value)
+		//And then build List<StagedMetric> based on key value pair
 		String applicationName = raw.getApplicationName();
 		String operation = raw.getOperation();
 		String marketPlace = raw.getMarketplace();
@@ -50,11 +70,12 @@ public class RawLogParser {
 		long endTime = Long.parseLong(raw.getEndTime());
 		
 		List<StagedMetric> stagedMetricList = new ArrayList<StagedMetric>();
-		String[] metricList = splitMetricNameList(raw);
+		List<String> metricList = splitMetricNameList(raw);
 		for(String nameValue : metricList) {
-			String[] metricAndValue = nameValue.split("=");
-			String metricName = metricAndValue[0];
-			double value = Double.parseDouble(metricAndValue[1]);
+			List<String> metricAndValue = Arrays.<String>asList(nameValue.split("="));
+			String metricName = metricAndValue.get(0);
+			String metricValue = metricAndValue.get(1);
+			double value = Double.parseDouble(metricValue);
 			
 			StagedMetric stagedMetric = new StagedMetric();
 			stagedMetric.setApplicationName(applicationName);
@@ -77,9 +98,9 @@ public class RawLogParser {
 	 * @param rawMetric
 	 * @return
 	 */
-	public static String[] splitMetricNameList(RawStagedMetric rawMetric) {
+	public static List<String> splitMetricNameList(RawStagedMetric rawMetric) {
 		String metricNameValue = rawMetric.getMetricNameValue();
 		metricNameValue = metricNameValue.replaceAll("\\(|\\)", "");
-		return metricNameValue.split(",");
+		return Arrays.<String>asList(metricNameValue.split(","));
 	}
 }
