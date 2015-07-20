@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
+import com.metrics.daemon.clients.MetricClient;
 import com.metrics.daemon.logic.ClientLogParser;
 import com.metrics.daemon.pojo.RawStagedMetric;
 import com.metrics.daemon.pojo.StagedMetric;
@@ -37,8 +38,7 @@ public class ClientLogScanner {
 	
 	public static void main(String[] args) {
 		List<StagedMetric> stagedMetricList = ClientLogScanner.parseClientLog("./src/main/resources/file/clientmetricsample.txt");
-		for(StagedMetric metric : stagedMetricList) {
-			System.out.println(metric);
-		}
+		MetricClient metricClient = new MetricClient();
+		metricClient.createMetric(stagedMetricList);
 	}
 }
