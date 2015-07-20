@@ -1,50 +1,31 @@
 package com.metrics.daemon.logic;
 
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Scanner;
 
+import com.metrics.daemon.exception.InvalidMetricException;
+import com.metrics.daemon.exception.handler.InvalidMetricHandler;
 import com.metrics.daemon.pojo.RawStagedMetric;
 import com.metrics.daemon.pojo.StagedMetric;
-import com.metrics.daemon.validation.LogicValidation;
 
 public class ClientLogParser {
-
-	public List<StagedMetric> logInput(String filename) {
-		try {
-			File clientLog = new File(filename);
-			return parseLog(clientLog);
-		} 
-		catch (FileNotFoundException fnfe) {
-			// Deal with the exception;
-		}
-		return new ArrayList<StagedMetric>();
-	}
-
-	private List<StagedMetric> parseLog(File clientLog) throws FileNotFoundException {
-		Scanner in = new Scanner(clientLog);
-
-		List<StagedMetric> metricList = listMetrics(in);
-
-		return metricList;
-	}
-
 	/**
-	 * Gets list of all raw metrics and then validates their type and logic.
-	 * After validation, it adds each raw metric to the staged metric list.
-	 * @param Scanner in
-	 * @return Validated List<StagedMetric>
+	 * Handles InvalidMetricException here so that it can continue to parse
+	 * after the exception is caught.
+	 * @param rawMetricList
+	 * @param filename
+	 * @return
 	 */
-	private List<StagedMetric> listMetrics(Scanner in) {
-		List<RawStagedMetric> rawStagedMetricList = buildRawMetricList(in);
-		
+	public static List<StagedMetric> rawMetricsToStagedMetrics(List<RawStagedMetric> rawMetricList, String filename) {
 		List<StagedMetric> stagedMetricList = new ArrayList<StagedMetric>();
-		for(RawStagedMetric rsm : rawStagedMetricList) {
-			if(LogicValidation.validRawMetric(rsm)) {
-				addValidRawToMetricList(rsm, stagedMetricList);
+		int lineNumber = 1;
+		for(RawStagedMetric rawMetric : rawMetricList) {
+			try {
+				addValidRawToMetricList(rawMetric, stagedMetricList);
+			} catch(InvalidMetricException ime) {
+				InvalidMetricHandler.handle(filename,lineNumber,ime); //handle here to continue parsing list
 			}
+			lineNumber++;
 		}
 		return stagedMetricList;
 	}
@@ -55,7 +36,7 @@ public class ClientLogParser {
 	 * @param rsm
 	 * @param stagedMetricList
 	 */
-	private void addValidRawToMetricList(RawStagedMetric rsm, List<StagedMetric> stagedMetricList) {
+	private static void addValidRawToMetricList(RawStagedMetric rsm, List<StagedMetric> stagedMetricList) {
 		List<StagedMetric> splitMetricList = RawLogParser.rawToStagedMetricList(rsm);
 		for(StagedMetric sm : splitMetricList) {
 			stagedMetricList.add(sm);
@@ -63,46 +44,26 @@ public class ClientLogParser {
 	}
 	
 	/**
-	 * Converts raw string log data into a list of raw staged metrics
-	 * @param Scanner in for client log.
-	 * @return List<RawStagedMetric> of logic validated raw metrics.
+	 * 
+	 * @param rawClientLog
+	 * @param filename
+	 * @return
 	 */
-	private List<RawStagedMetric> buildRawMetricList(Scanner in) {
-		List<RawStagedMetric> rawStagedMetricList = new ArrayList<RawStagedMetric>();
-		while(in.hasNextLine()) {
-			in.nextLine(); //skip a line here
-			List<String> rawLog = buildRawList(in);
-			//If data is valid then add it to raw staged metric list
-			if(LogicValidation.validRawData(rawLog)) {
-				RawStagedMetric newRawMetric = RawLogParser.buildRawStagedMetric(rawLog);
-				rawStagedMetricList.add(newRawMetric);
+	public static List<RawStagedMetric> rawClientLogToRawMetrics(List<String> rawClientLog, String filename) {
+		List<RawStagedMetric> rawMetricList = new ArrayList<RawStagedMetric>();
+		int lineNumber = 1;
+		for(String rawLog : rawClientLog) {
+			RawStagedMetric rawMetric = null;
+			try {
+				rawMetric = RawLogParser.buildRawStagedMetric(rawLog);
+			} catch(InvalidMetricException ime) {
+				InvalidMetricHandler.handle(filename,lineNumber,ime); //handle here to continue parsing list
 			}
-			//Or else just continue to next raw metric in log
-			//This else is redundant
-			else {
-				continue;
+			if(rawMetric != null) {
+				rawMetricList.add(rawMetric);
 			}
+			lineNumber++;
 		}
-		return rawStagedMetricList;
+		return rawMetricList;
 	}
-	
-	/**
-	 * Builds a raw list of string data taken from client log.
-	 * Blindly takes in raw metric data until a whitespace is reached.
-	 * Whitespace delimiting here is crucial.
-	 * @param Scanner in for client log
-	 * @return List<String> of raw un-validated metrics
-	 */
-	private List<String> buildRawList(Scanner in) {
-		List<String> rawLog = new ArrayList<String>();
-		String nextLine = in.nextLine();
-		// Need to ensure that there are white lines between metric clusters
-		while (!nextLine.equals("\\n")) {
-			rawLog.add(nextLine);
-			nextLine = in.nextLine();
-		}
-		return rawLog;
-	}
-	
-	
 }

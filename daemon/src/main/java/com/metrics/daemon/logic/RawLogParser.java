@@ -56,12 +56,8 @@ public class RawLogParser {
 	 * @return List<StagedMetric> depending on how many metrics in given list
 	 */
 	public static List<StagedMetric> rawToStagedMetricList(RawStagedMetric raw) {
-		//Validated here
-		LogicValidation.validRawMetric(raw);
+		LogicValidation.validRawMetric(raw); //InvalidMetricException thrown
 		
-		//TODO
-		//Use a HashMap to store metric-(name/value)
-		//And then build List<StagedMetric> based on key value pair
 		String applicationName = raw.getApplicationName();
 		String operation = raw.getOperation();
 		String marketPlace = raw.getMarketplace();
@@ -69,12 +65,12 @@ public class RawLogParser {
 		long startTime = Long.parseLong(raw.getStartTime());
 		long endTime = Long.parseLong(raw.getEndTime());
 		
-		List<StagedMetric> stagedMetricList = new ArrayList<StagedMetric>();
+		List<StagedMetric> stagedMetricList = new ArrayList<>();
 		List<String> metricList = splitMetricNameList(raw);
 		for(String nameValue : metricList) {
-			List<String> metricAndValue = Arrays.<String>asList(nameValue.split("="));
-			String metricName = metricAndValue.get(0);
-			String metricValue = metricAndValue.get(1);
+			List<String> thismetricAndValue = Arrays.<String>asList(nameValue.split("="));
+			String metricName = thismetricAndValue.get(0);
+			String metricValue = thismetricAndValue.get(1);
 			double value = Double.parseDouble(metricValue);
 			
 			StagedMetric stagedMetric = new StagedMetric();
