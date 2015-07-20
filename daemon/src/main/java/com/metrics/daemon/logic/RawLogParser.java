@@ -44,7 +44,7 @@ public class RawLogParser {
 		newRawMetric.setStartTime(startTime);
 		String endTime = rawMetric.get(5).split("=")[1];
 		newRawMetric.setEndTime(endTime);
-		String metricNameValue = rawMetric.get(6).split("=")[1];
+		String metricNameValue = rawMetric.get(6).split("=\\(")[1];
 		newRawMetric.setMetricNameValue(metricNameValue);
 		
 		return newRawMetric;

@@ -11,28 +11,34 @@ import com.metrics.daemon.pojo.RawStagedMetric;
 import com.metrics.daemon.pojo.StagedMetric;
 
 public class ClientLogScanner {
-	public List<StagedMetric> parseClientLog(String filename) {
+	public static List<StagedMetric> parseClientLog(String filename) {
 		List<String> rawClientLog = scanRawClientLog(filename);
 		List<RawStagedMetric> rawMetricList = ClientLogParser.rawClientLogToRawMetrics(rawClientLog, filename);
 		List<StagedMetric> stagedMetricList = ClientLogParser.rawMetricsToStagedMetrics(rawMetricList, filename);
 		return stagedMetricList;
 	}
 	
-	private List<String> scanRawClientLog(String filename) {
+	private static List<String> scanRawClientLog(String filename) {
 		File clientLog = new File(filename);
 		Scanner in = null;
 		try {
 			in = new Scanner(clientLog);
+			List<String> rawMetrics = new ArrayList<String>();
+			while (in.hasNext()) {
+				rawMetrics.add(in.nextLine());
+			}
+			return rawMetrics;
 		} catch (FileNotFoundException fnfe) {
 			throw new RuntimeException(fnfe);
 		} finally {
 			in.close();
 		}
-
-		List<String> rawMetrics = new ArrayList<String>();
-		while (in.hasNext()) {
-			rawMetrics.add(in.nextLine());
+	}
+	
+	public static void main(String[] args) {
+		List<StagedMetric> stagedMetricList = ClientLogScanner.parseClientLog("./src/main/resources/file/clientmetricsample.txt");
+		for(StagedMetric metric : stagedMetricList) {
+			System.out.println(metric);
 		}
-		return rawMetrics;
 	}
 }
