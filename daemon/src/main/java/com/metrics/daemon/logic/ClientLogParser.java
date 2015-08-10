@@ -21,6 +21,8 @@ public class ClientLogParser {
 		int lineNumber = 1;
 		for(RawStagedMetric rawMetric : rawMetricList) {
 			try {
+				//TODO
+				//Use add all instead of a new function
 				addValidRawToMetricList(rawMetric, stagedMetricList);
 			} catch(InvalidMetricException ime) {
 				InvalidMetricHandler.handle(filename,lineNumber,ime); //handle here to continue parsing list
