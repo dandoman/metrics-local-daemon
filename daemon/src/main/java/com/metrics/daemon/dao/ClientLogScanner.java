@@ -1,13 +1,14 @@
 package com.metrics.daemon.dao;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.util.ArrayList;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.List;
-import java.util.Scanner;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-import com.metrics.daemon.clients.MetricClient;
 import com.metrics.daemon.logic.ClientLogParser;
+import com.metrics.daemon.pojo.ClientLogState;
 import com.metrics.daemon.pojo.RawStagedMetric;
 import com.metrics.daemon.pojo.StagedMetric;
 
@@ -19,26 +20,43 @@ public class ClientLogScanner {
 		return stagedMetricList;
 	}
 	
+	/**
+	 * Scans in the raw client log and uses ClientLogStateAccess to store
+	 * the new state of the client log.
+	 * @param filename name of client log to be parsed
+	 * @return the raw client log
+	 */
 	private static List<String> scanRawClientLog(String filename) {
-		File clientLog = new File(filename);
-		Scanner in = null;
-		try {
-			in = new Scanner(clientLog);
-			List<String> rawMetrics = new ArrayList<String>();
-			while (in.hasNext()) {
-				rawMetrics.add(in.nextLine());
-			}
+		long currentLineNumber = 0;
+		if(ClientLogStateAccess.exists()) {
+			currentLineNumber = ClientLogStateAccess.getCurrentState().getCurrentLineNumber();
+		}
+		try (Stream<String> lines = Files.lines(Paths.get(filename))
+										 .skip(currentLineNumber)) {
+			List<String> rawMetrics = lines.collect(Collectors.toList());
+			long newLineNumber = currentLineNumber + rawMetrics.size();
+			ClientLogState newState = new ClientLogState();
+			newState.setCurrentLineNumber(newLineNumber);
+			ClientLogStateAccess.saveCurrentState(newState);
 			return rawMetrics;
-		} catch (FileNotFoundException fnfe) {
-			throw new RuntimeException(fnfe);
-		} finally {
-			in.close();
+		} catch (IOException ioe) {
+			throw new RuntimeException(ioe);
 		}
 	}
 	
 	public static void main(String[] args) {
 		List<StagedMetric> stagedMetricList = ClientLogScanner.parseClientLog("./src/main/resources/file/clientmetricsample.txt");
-		MetricClient metricClient = new MetricClient();
-		metricClient.createMetric(stagedMetricList);
+		for(StagedMetric metric : stagedMetricList) {
+			System.out.println(metric);
+		}
+		
+		/*
+		 * Send out HTML request from client
+		 */
+		//MetricClient metricClient = new MetricClient();
+		//metricClient.createMetric(stagedMetricList);
+		/*
+		 * End of Request
+		 */
 	}
 }
