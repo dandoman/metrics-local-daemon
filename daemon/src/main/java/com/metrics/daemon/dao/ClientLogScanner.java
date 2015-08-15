@@ -8,7 +8,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.metrics.daemon.logic.ClientLogParser;
-import com.metrics.daemon.pojo.ClientLogState;
 import com.metrics.daemon.pojo.RawStagedMetric;
 import com.metrics.daemon.pojo.StagedMetric;
 
@@ -27,17 +26,12 @@ public class ClientLogScanner {
 	 * @return the raw client log
 	 */
 	private static List<String> scanRawClientLog(String filename) {
-		long currentLineNumber = 0;
-		if(ClientLogStateAccess.exists()) {
-			currentLineNumber = ClientLogStateAccess.getCurrentState().getCurrentLineNumber();
-		}
+		long currentLineNumber = ClientLogStateAccess.getCurrentLineNumber();
 		try (Stream<String> lines = Files.lines(Paths.get(filename))
 										 .skip(currentLineNumber)) {
 			List<String> rawMetrics = lines.collect(Collectors.toList());
 			long newLineNumber = currentLineNumber + rawMetrics.size();
-			ClientLogState newState = new ClientLogState();
-			newState.setCurrentLineNumber(newLineNumber);
-			ClientLogStateAccess.saveCurrentState(newState);
+			ClientLogStateAccess.saveCurrentState(newLineNumber, ClientLogStateAccess.getCurrentFileName());
 			return rawMetrics;
 		} catch (IOException ioe) {
 			throw new RuntimeException(ioe);
@@ -45,10 +39,10 @@ public class ClientLogScanner {
 	}
 	
 	public static void main(String[] args) {
-		List<StagedMetric> stagedMetricList = ClientLogScanner.parseClientLog("./src/main/resources/file/clientmetricsample.txt");
+		/*List<StagedMetric> stagedMetricList = ClientLogScanner.parseClientLog("./src/main/resources/file/clientmetricsample.txt");
 		for(StagedMetric metric : stagedMetricList) {
 			System.out.println(metric);
-		}
+		}*/
 		
 		/*
 		 * Send out HTML request from client

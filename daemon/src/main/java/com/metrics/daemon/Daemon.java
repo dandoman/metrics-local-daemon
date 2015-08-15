@@ -8,8 +8,8 @@ import java.util.concurrent.TimeUnit;
 public class Daemon {
 	private final ScheduledExecutorService scheduledDaemonExecutor;
 	private final TimeUnit timeUnit = TimeUnit.SECONDS;
-	private final long logParseTime = 1;
-	private final long fileChangeTime = 4;
+	private final long logParseTime = 30;
+	private final long fileChangeTime = 31;
 	
 	public Daemon() {
 		scheduledDaemonExecutor = Executors.newSingleThreadScheduledExecutor(); 
@@ -36,7 +36,7 @@ public class Daemon {
 	public static void main(String[] args) throws InterruptedException, ExecutionException {
 		Daemon test = new Daemon();
 		test.start();
-		Thread.sleep(5000);
+		Thread.sleep(190000);
 		test.stop();
 	}
 
