@@ -10,8 +10,8 @@ import java.io.Serializable;
 
 import org.joda.time.DateTime;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 public class ClientLogStateAccess {
 
@@ -33,13 +33,13 @@ public class ClientLogStateAccess {
 			currentState = readCurrentState();
 		} else {
 			DateTime currentDate = DateTime.now();
+			currentState = new ClientLogState();
 			writeCurrentState(0, "service_log." + currentDate.toString("Y-M-d-H"), currentDate);
-			currentState = readCurrentState();
 		}
 	}
 
 	@Data
-	@AllArgsConstructor
+	@NoArgsConstructor
 	private static class ClientLogState implements Serializable {
 		private static final long serialVersionUID = 6514393267674187932L;
 		//TODO
@@ -59,7 +59,7 @@ public class ClientLogStateAccess {
 		if(!newFileLogDirectory.getPath().equals(oldFileLogDirectory.getPath())) {
 			DateTime now = DateTime.now();
 			writeCurrentState(0, 
-							  logDirectory + "\\service_log." + now.toString("Y-M-d-H"),
+							  logDirectory + "service_log." + now.toString("Y-M-d-H"),
 							  now);
 		}
 	}

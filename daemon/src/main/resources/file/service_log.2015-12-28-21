@@ -1,0 +1,7 @@
+ApplicationName=pimpin;Operation=hustlin;MarketPlace=montreal;HostName=fuck.com;StartTime=0;EndTime=1;Metrics=(moneyEarned=1)
+ApplicationName=hooker;Operation=prostitution;MarketPlace=montreal;HostName=fuck.com;StartTime=1;EndTime=2;Metrics=(moneyEarned=1,cocksSucked=2)
+ApplicationName=hooker;Operation=prostitution;MarketPlace=laval;HostName=fuck.com;StartTime=1;EndTime=2;Metrics=(moneyEarned=1,cocksSucked=2,fucksGiven=0.3)
+ApplicationName=pimpin;Operation=hustlin;MarketPlace=montreal;HostName=fuck.com;StartTime=1;EndTime=2;Metrics=(hoesSlapped=1,respectGained=2)
+ApplicationName=hooker;Operation=prostitution;MarketPlace=laval;HostName=fuck.com;StartTime=1;EndTime=2;Metrics=(moneyEarned=2,cocksSucked=4,fucksGiven=0.3)
+ApplicationName=rumpin;Operation=hustlin;MarketPlace=montreal;HostName=fuck.com;StartTime=1;EndTime=2;Metrics=(hoesSlapped=1,respectGained=2)
+ApplicationName=bumpin;Operation=prostitution;MarketPlace=laval;HostName=fuck.com;StartTime=1;EndTime=2;Metrics=(moneyEarned=2,cocksSucked=4,fucksGiven=0.3)

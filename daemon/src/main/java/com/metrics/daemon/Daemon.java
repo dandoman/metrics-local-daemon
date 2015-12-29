@@ -41,4 +41,8 @@ public class Daemon {
 								+ scheduledDaemonExecutor.isShutdown());
 	}
 
+	public static void main(String[] args) throws InterruptedException, ExecutionException {
+		Daemon d = new Daemon(10, "src/main/resources/file/");
+		d.start();
+	}
 }
