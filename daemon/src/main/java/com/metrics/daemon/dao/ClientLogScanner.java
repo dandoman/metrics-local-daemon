@@ -47,5 +47,4 @@ public class ClientLogScanner {
 			throw new RuntimeException(ioe);
 		}
 	}
-	
 }
