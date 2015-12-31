@@ -10,8 +10,6 @@ import java.util.stream.Collectors;
 
 import com.metrics.daemon.logic.ClientDirectoryParser;
 import com.metrics.daemon.logic.ClientLogParser;
-import com.metrics.daemon.logic.OldClientLogParser;
-import com.metrics.daemon.pojo.RawStagedMetric;
 import com.metrics.daemon.pojo.StagedMetric;
 
 public class ClientLogScanner {
@@ -34,6 +32,7 @@ public class ClientLogScanner {
 		}
 	}
 	
+	//TODO This can be removed for efficiency if we only parse one 5-minute log per daemon cycle
 	private static List<String> aggregateLogs(List<File> logsToParse) {
 		List<String> allRawMetrics = new ArrayList<>();
 		for(File log : logsToParse) {

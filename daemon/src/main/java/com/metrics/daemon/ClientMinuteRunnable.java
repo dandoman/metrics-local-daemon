@@ -19,6 +19,7 @@ public class ClientMinuteRunnable implements Runnable {
 	public void run() {
 		//String currentFileName = ClientLogStateAccess.getCurrentFileName();
 		List<StagedMetric> stagedMetricList = ClientLogScanner.parseClientLog(logDirectoryName);
+		//TODO Delete successfully parsed log here if need be
 
 		// TODO
 		/*

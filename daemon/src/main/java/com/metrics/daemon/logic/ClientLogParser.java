@@ -19,6 +19,7 @@ public class ClientLogParser {
 				smList.add(sm);
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
+				// This will simply skip over invalid json
 			}
 		}
 		return smList;
