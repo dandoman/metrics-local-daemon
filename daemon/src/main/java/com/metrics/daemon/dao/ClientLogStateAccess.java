@@ -34,7 +34,7 @@ public class ClientLogStateAccess {
 		} else {
 			DateTime currentDate = DateTime.now();
 			currentState = new ClientLogState();
-			writeCurrentState(0, "service_log." + currentDate.toString("Y-M-d-H"), currentDate);
+			writeCurrentState(0, "service_log." + currentDate.toString("Y-M-d-H-m"), currentDate);
 		}
 	}
 
@@ -59,7 +59,7 @@ public class ClientLogStateAccess {
 		if(!newFileLogDirectory.getPath().equals(oldFileLogDirectory.getPath())) {
 			DateTime now = DateTime.now();
 			writeCurrentState(0, 
-							  logDirectory + "service_log." + now.toString("Y-M-d-H"),
+							  logDirectory + "/service_log." + now.toString("Y-M-d-H-m"),
 							  now);
 		}
 	}
