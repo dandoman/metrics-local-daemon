@@ -30,7 +30,7 @@ public class Daemon {
 	
 	public void start() throws InterruptedException, ExecutionException {
 		long initialTime = 60 - DateTime.now().getSecondOfMinute();
-		//ClientLogStateAccess.init(logDirectory);
+		ClientLogStateAccess.init(logDirectory);
 		scheduledDaemonExecutor.scheduleWithFixedDelay(new ClientMinuteRunnable(logDirectory), 
 				initialTime, logParseTime, timeUnit);
 	}

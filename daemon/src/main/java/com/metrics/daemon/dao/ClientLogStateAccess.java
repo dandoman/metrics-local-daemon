@@ -2,6 +2,7 @@ package com.metrics.daemon.dao;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -9,6 +10,10 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 
 import org.joda.time.DateTime;
+
+import com.metrics.daemon.exception.InvalidLogException;
+import com.metrics.daemon.exception.LogNotFoundException;
+import com.metrics.daemon.logic.ClientLogValidation;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -26,6 +31,7 @@ public class ClientLogStateAccess {
 	// Keep track of name of service log and where it's going. 
 	/*
 	 * Initializing the daemon state .dat file.
+	 * This ensures that clientLogState will be initialized regardless of what exists.
 	 */
 	static {
 		final File previousLogState = new File(clientLogStateName);
@@ -44,8 +50,8 @@ public class ClientLogStateAccess {
 		private static final long serialVersionUID = 6514393267674187932L;
 		//TODO
 		//turn currentFileName into file object so we can have access to file path
-		private String currentFileName;
 		private long currentLineNumber;
+		private String currentFileName;
 		private DateTime currentDate;
 	}
 	
@@ -53,15 +59,35 @@ public class ClientLogStateAccess {
 	 * Checks to see if we have a valid old directory or not.
 	 * If directories dont match, then we start in new directory.
 	 */
-	public static void init(String logDirectory) {
-		File newFileLogDirectory = new File(logDirectory);
-		File oldFileLogDirectory = new File(getCurrentFileName());
-		if(!newFileLogDirectory.getPath().equals(oldFileLogDirectory.getPath())) {
-			DateTime now = DateTime.now();
-			writeCurrentState(0, 
-							  logDirectory + "/service_log." + now.toString("Y-M-d-H-m"),
-							  now);
+	public static void init(String logDirectory) throws LogNotFoundException {
+		String currentLogName = getCurrentLogName(logDirectory);
+		String dateString = currentLogName.split("\\.")[1];
+		String[] arrayDate = dateString.split("\\-");
+		DateTime date = new DateTime(Integer.parseInt(arrayDate[0]),
+									 Integer.parseInt(arrayDate[1]),
+									 Integer.parseInt(arrayDate[2]),
+									 Integer.parseInt(arrayDate[3]),
+									 Integer.parseInt(arrayDate[4]));
+		writeCurrentState(0, currentLogName, date);
+	}
+	
+	private static String getCurrentLogName(String newLogDirectory) throws LogNotFoundException {
+		File logDirectory = new File(newLogDirectory);
+		File[] allLogs = logDirectory.listFiles();
+		File oldestLog = allLogs[allLogs.length-1];
+		String oldestLogName = oldestLog.getName();
+		
+		if(!oldestLog.exists()) {
+			LogNotFoundException lgfe = new LogNotFoundException(oldestLog.getAbsolutePath() + " is not a valid log.");
+			throw lgfe;
 		}
+		
+		if(!ClientLogValidation.validateLogName(oldestLogName)) {
+			//TODO handle this exception
+			//throw new InvalidLogException(oldestLogName + " is not a valid log name.");
+		}
+		
+		return oldestLogName;
 	}
 
 	// Could replace with getCurrentState to get from memory
