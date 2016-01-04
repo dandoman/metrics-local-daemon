@@ -1,5 +1,6 @@
 package com.metrics.daemon;
 
+import java.io.File;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -15,8 +16,6 @@ public class Daemon {
 	private final long logParseTime;
 	private final String logDirectory;
 	
-	//TODO
-	//Add filename here
 	public Daemon(long logParseTime, String logDirectory) {
 		this.logParseTime = logParseTime;
 		this.logDirectory = logDirectory;
@@ -24,6 +23,7 @@ public class Daemon {
 	}
 	
 	//Default daemon runs every 60 seconds
+	//Should be 5 minutes eventually
 	public Daemon(String logDirectory) {
 		 this(60, logDirectory);
 	}
@@ -31,7 +31,7 @@ public class Daemon {
 	public void start() throws InterruptedException, ExecutionException {
 		long initialTime = 60 - DateTime.now().getSecondOfMinute();
 		ClientLogStateAccess.init(logDirectory);
-		scheduledDaemonExecutor.scheduleWithFixedDelay(new ClientMinuteRunnable(), 
+		scheduledDaemonExecutor.scheduleWithFixedDelay(new ClientMinuteRunnable(logDirectory), 
 				initialTime, logParseTime, timeUnit);
 	}
 	
@@ -42,7 +42,7 @@ public class Daemon {
 	}
 
 	public static void main(String[] args) throws InterruptedException, ExecutionException {
-		Daemon d = new Daemon(10, "src/main/resources/file/");
+		Daemon d = new Daemon(10, "/tmp");
 		d.start();
 	}
 }
