@@ -39,10 +39,11 @@ public class MetricClient {
 				.setConnectionManager(connectionManager).build();
 		URIBuilder builder = new URIBuilder();
 		builder.setScheme("http")
-				.setHost("ec2-52-24-132-32.us-west-2.compute.amazonaws.com")
+				.setHost("ec2-52-88-83-153.us-west-2.compute.amazonaws.com")
 				.setPort(8080).setPath("/MetricsService/processing/upload");
 		BulkUploadRequest req = new BulkUploadRequest();
-		req.setApiKey("mahKeyy");
+		//TODO how do we pass in API key?
+		req.setApiKey("5a41733e-df01-404f-a36e-1053d73f2fd7");
 		req.setMetrics(metricList);
 
 		try {

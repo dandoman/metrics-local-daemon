@@ -7,6 +7,7 @@ import lombok.AllArgsConstructor;
 import org.joda.time.DateTime;
 import org.joda.time.Period;
 
+import com.metrics.daemon.clients.MetricClient;
 import com.metrics.daemon.dao.ClientLogScanner;
 import com.metrics.daemon.dao.ClientLogStateAccess;
 import com.metrics.daemon.pojo.StagedMetric;
@@ -25,6 +26,8 @@ public class ClientMinuteRunnable implements Runnable {
 		/*
 		 * REPLACE WITH HTTP POST REQUEST HERE, SAME AMOUNT OF TIME?
 		 */
+		MetricClient client = new MetricClient();
+		client.createMetric(stagedMetricList);
 		for (StagedMetric metric : stagedMetricList) {
 			System.out.println(metric);
 		}

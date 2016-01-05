@@ -42,7 +42,7 @@ public class Daemon {
 	}
 
 	public static void main(String[] args) throws InterruptedException, ExecutionException {
-		Daemon d = new Daemon(10, "/tmp");
+		Daemon d = new Daemon(10, "/tmp/service");
 		d.start();
 	}
 }
