@@ -13,6 +13,7 @@ import org.joda.time.DateTime;
 
 import com.metrics.daemon.exception.InvalidLogException;
 import com.metrics.daemon.exception.LogNotFoundException;
+import com.metrics.daemon.logic.ClientDirectoryParser;
 import com.metrics.daemon.logic.ClientLogValidation;
 
 import lombok.Data;
@@ -59,35 +60,21 @@ public class ClientLogStateAccess {
 	 * Checks to see if we have a valid old directory or not.
 	 * If directories dont match, then we start in new directory.
 	 */
-	public static void init(String logDirectory) throws LogNotFoundException {
-		String currentLogName = getCurrentLogName(logDirectory);
-		String dateString = currentLogName.split("\\.")[1];
-		String[] arrayDate = dateString.split("\\-");
-		DateTime date = new DateTime(Integer.parseInt(arrayDate[0]),
-									 Integer.parseInt(arrayDate[1]),
-									 Integer.parseInt(arrayDate[2]),
-									 Integer.parseInt(arrayDate[3]),
-									 Integer.parseInt(arrayDate[4]));
-		writeCurrentState(0, currentLogName, date);
-	}
-	
-	private static String getCurrentLogName(String newLogDirectory) throws LogNotFoundException {
-		File logDirectory = new File(newLogDirectory);
-		File[] allLogs = logDirectory.listFiles();
-		File oldestLog = allLogs[allLogs.length-1];
-		String oldestLogName = oldestLog.getName();
-		
-		if(!oldestLog.exists()) {
-			LogNotFoundException lgfe = new LogNotFoundException(oldestLog.getAbsolutePath() + " is not a valid log.");
-			throw lgfe;
+	public static void init(String logDirectory) {
+		String currentLogName = "";
+		try {
+			ClientDirectoryParser.getEarliestLog(logDirectory);
+			String dateString = currentLogName.split("\\.")[1];
+			String[] arrayDate = dateString.split("\\-");
+			DateTime date = new DateTime(Integer.parseInt(arrayDate[0]),
+										 Integer.parseInt(arrayDate[1]),
+										 Integer.parseInt(arrayDate[2]),
+										 Integer.parseInt(arrayDate[3]),
+										 Integer.parseInt(arrayDate[4]));
+			writeCurrentState(0, currentLogName, date);
+		} catch (LogNotFoundException lnfe) {
+			//Do nothing for now
 		}
-		
-		if(!ClientLogValidation.validateLogName(oldestLogName)) {
-			//TODO handle this exception
-			//throw new InvalidLogException(oldestLogName + " is not a valid log name.");
-		}
-		
-		return oldestLogName;
 	}
 
 	// Could replace with getCurrentState to get from memory

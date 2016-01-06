@@ -30,6 +30,7 @@ public class Daemon {
 	
 	public void start() throws InterruptedException, ExecutionException {
 		long initialTime = 60 - DateTime.now().getSecondOfMinute();
+		//TODO use clientlogstate access for optimized checking of file names
 		ClientLogStateAccess.init(logDirectory);
 		scheduledDaemonExecutor.scheduleWithFixedDelay(new ClientMinuteRunnable(logDirectory), 
 				initialTime, logParseTime, timeUnit);

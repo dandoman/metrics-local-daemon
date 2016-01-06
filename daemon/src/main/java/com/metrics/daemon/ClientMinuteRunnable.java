@@ -10,6 +10,7 @@ import org.joda.time.Period;
 import com.metrics.daemon.clients.MetricClient;
 import com.metrics.daemon.dao.ClientLogScanner;
 import com.metrics.daemon.dao.ClientLogStateAccess;
+import com.metrics.daemon.logic.ClientDirectoryParser;
 import com.metrics.daemon.pojo.StagedMetric;
 
 @AllArgsConstructor
@@ -20,17 +21,15 @@ public class ClientMinuteRunnable implements Runnable {
 	public void run() {
 		//String currentFileName = ClientLogStateAccess.getCurrentFileName();
 		List<StagedMetric> stagedMetricList = ClientLogScanner.parseClientLog(logDirectoryName);
-		//TODO Delete successfully parsed log here if need be
-
-		// TODO
-		/*
-		 * REPLACE WITH HTTP POST REQUEST HERE, SAME AMOUNT OF TIME?
-		 */
+		
 		MetricClient client = new MetricClient();
 		client.createMetric(stagedMetricList);
 		for (StagedMetric metric : stagedMetricList) {
 			System.out.println(metric);
 		}
+		
+		//Delete successfully parsed log here
+		ClientDirectoryParser.deleteParsedLog(logDirectoryName);
 		
 		//long currentLineNumber = ClientLogStateAccess.getCurrentLineNumber();
 		//long newLineNumber = currentLineNumber + ClientLogScanner.getRawClientLogLength();
