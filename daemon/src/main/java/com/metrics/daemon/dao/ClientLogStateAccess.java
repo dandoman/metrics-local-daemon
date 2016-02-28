@@ -63,7 +63,7 @@ public class ClientLogStateAccess {
 	public static void init(String logDirectory) {
 		String currentLogName = "";
 		try {
-			ClientDirectoryParser.getEarliestLog(logDirectory);
+			currentLogName = ClientDirectoryParser.getEarliestLog(logDirectory).getName();
 			String dateString = currentLogName.split("\\.")[1];
 			String[] arrayDate = dateString.split("\\-");
 			DateTime date = new DateTime(Integer.parseInt(arrayDate[0]),
