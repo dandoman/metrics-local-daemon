@@ -11,8 +11,7 @@ public class StagedMetric {
 	private String operation;
 	private String marketplace;
 	private String hostName;
-	private long startTime;
-	private long endTime;
+	private long timeStamp;
 	private String metricName;
 	private double value;
 }

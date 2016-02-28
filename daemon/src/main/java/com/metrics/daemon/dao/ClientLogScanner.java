@@ -1,44 +1,64 @@
 package com.metrics.daemon.dao;
 
 import java.io.File;
-import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Scanner;
 
-import com.metrics.daemon.clients.MetricClient;
+import com.metrics.daemon.logic.ClientDirectoryParser;
 import com.metrics.daemon.logic.ClientLogParser;
-import com.metrics.daemon.pojo.RawStagedMetric;
 import com.metrics.daemon.pojo.StagedMetric;
 
 public class ClientLogScanner {
-	public static List<StagedMetric> parseClientLog(String filename) {
-		List<String> rawClientLog = scanRawClientLog(filename);
-		List<RawStagedMetric> rawMetricList = ClientLogParser.rawClientLogToRawMetrics(rawClientLog, filename);
-		List<StagedMetric> stagedMetricList = ClientLogParser.rawMetricsToStagedMetrics(rawMetricList, filename);
+	
+	private static List<String> rawClientLog;
+	
+	public static List<StagedMetric> parseClientLog(String logdirectory) {
+		List<File> logsToParse = ClientDirectoryParser.getFileBatch(logdirectory);
+		rawClientLog = aggregateLogs(logsToParse);
+		List<StagedMetric> stagedMetricList = ClientLogParser.logToJson(rawClientLog);
 		return stagedMetricList;
 	}
 	
-	private static List<String> scanRawClientLog(String filename) {
-		File clientLog = new File(filename);
-		Scanner in = null;
+	public static long getRawClientLogLength() {
+		//In case not yet initialized
 		try {
-			in = new Scanner(clientLog);
-			List<String> rawMetrics = new ArrayList<String>();
-			while (in.hasNext()) {
-				rawMetrics.add(in.nextLine());
-			}
-			return rawMetrics;
-		} catch (FileNotFoundException fnfe) {
-			throw new RuntimeException(fnfe);
-		} finally {
-			in.close();
+			return rawClientLog.size();
+		} catch(NullPointerException npe) {
+			throw new RuntimeException();
 		}
 	}
 	
-	public static void main(String[] args) {
-		List<StagedMetric> stagedMetricList = ClientLogScanner.parseClientLog("./src/main/resources/file/clientmetricsample.txt");
-		MetricClient metricClient = new MetricClient();
-		metricClient.createMetric(stagedMetricList);
+	//TODO This can be removed for efficiency if we only parse one 5-minute log per daemon cycle
+	private static List<String> aggregateLogs(List<File> logsToParse) {
+		List<String> allRawMetrics = new ArrayList<>();
+		for(File log : logsToParse) {
+			List<String> rawLog = scanRawClientLog(log.getAbsolutePath());
+			for(String metric : rawLog) {
+				allRawMetrics.add(metric);
+			}
+		}
+		return allRawMetrics;
+	}
+	
+	/**
+	 * Scans in the raw client log and uses ClientLogStateAccess to store
+	 * the new state of the client log.
+	 * @param logdirectory name of client log to be parsed
+	 * @return the raw client log
+	 */
+	private static List<String> scanRawClientLog(String filename) {
+		//Empty stream is returned if logdirectory skips less than currentLineNumber elements
+		//CHECK OFF BY ONE ERROR IN UNIT TESTING
+		try {
+			List<String> lines = Files.readAllLines(Paths.get(filename), StandardCharsets.UTF_8);
+			return lines;
+		} catch (IOException ioe) {
+			throw new RuntimeException(ioe);
+		}
 	}
 }
