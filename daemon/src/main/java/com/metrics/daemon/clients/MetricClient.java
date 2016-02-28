@@ -43,7 +43,7 @@ public class MetricClient {
 				.setPort(8080).setPath("/MetricsService/processing/upload");
 		BulkUploadRequest req = new BulkUploadRequest();
 		//TODO how do we pass in API key?
-		req.setApiKey("5a41733e-df01-404f-a36e-1053d73f2fd7");
+		req.setApiKey("0db202f9-bdf5-479a-aec8-4765724a4083");
 		req.setMetrics(metricList);
 
 		try {

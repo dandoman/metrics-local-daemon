@@ -7,6 +7,7 @@ import org.junit.Test;
 
 import com.metrics.daemon.Daemon;
 
+@Ignore
 public class ClientLogStateAccessTest {
 
 	@Test

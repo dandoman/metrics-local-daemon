@@ -10,6 +10,7 @@ import org.joda.time.DateTime;
 
 import com.metrics.daemon.dao.ClientLogStateAccess;
 
+
 public class Daemon {
 	private final ScheduledExecutorService scheduledDaemonExecutor;
 	private final TimeUnit timeUnit = TimeUnit.SECONDS;
@@ -43,7 +44,7 @@ public class Daemon {
 	}
 
 	public static void main(String[] args) throws InterruptedException, ExecutionException {
-		Daemon d = new Daemon(10, "/tmp/service");
+		Daemon d = new Daemon(10, "/var/metrics");
 		d.start();
 	}
 }

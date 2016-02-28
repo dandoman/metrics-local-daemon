@@ -2,11 +2,12 @@ package com.metrics.daemon.dao;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import com.metrics.daemon.logic.ClientDirectoryParser;
 import com.metrics.daemon.logic.ClientLogParser;
@@ -54,9 +55,8 @@ public class ClientLogScanner {
 		//Empty stream is returned if logdirectory skips less than currentLineNumber elements
 		//CHECK OFF BY ONE ERROR IN UNIT TESTING
 		try {
-			return Files.lines(Paths.get(filename))
-					 	//.skip(ClientLogStateAccess.getCurrentLineNumber())
-					 	.collect(Collectors.toList());
+			List<String> lines = Files.readAllLines(Paths.get(filename), StandardCharsets.UTF_8);
+			return lines;
 		} catch (IOException ioe) {
 			throw new RuntimeException(ioe);
 		}
