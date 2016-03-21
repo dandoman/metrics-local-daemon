@@ -15,7 +15,6 @@ import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.metrics.daemon.pojo.BulkUploadRequest;
-import com.metrics.daemon.pojo.CreateMonitorRequest;
 import com.metrics.daemon.pojo.StagedMetric;
 import com.metrics.daemon.pojo.Metric;
 
@@ -33,7 +32,7 @@ public class MetricClient {
 				.setConnectionManager(connectionManager).build();
 	}
 
-	public int createMetric(List<StagedMetric> metricList) {
+	public int createMetric(List<StagedMetric> metricList, String apiKey) {
 		HttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager();
 		client = HttpClientBuilder.create()
 				.setConnectionManager(connectionManager).build();
@@ -43,7 +42,7 @@ public class MetricClient {
 				.setPort(8080).setPath("/MetricsService/processing/upload");
 		BulkUploadRequest req = new BulkUploadRequest();
 		//TODO how do we pass in API key?
-		req.setApiKey("0db202f9-bdf5-479a-aec8-4765724a4083");
+		req.setApiKey(apiKey);
 		req.setMetrics(metricList);
 
 		try {
@@ -79,19 +78,4 @@ public class MetricClient {
 
 	}
 
-	public void createMonitor(CreateMonitorRequest req) throws Exception {
-		URIBuilder builder = new URIBuilder();
-		builder.setScheme("http")
-				.setHost("ec2-52-24-132-32.us-west-2.compute.amazonaws.com")
-				.setPort(8080).setPath("/MetricsService/monitor");
-
-		HttpPost post = new HttpPost(builder.build());
-		post.setHeader("Content-Type", "application/json");
-		post.setEntity(EntityBuilder.create()
-				.setBinary(mapper.writeValueAsBytes(req)).build());
-		HttpResponse r = client.execute(post);
-		if(r.getStatusLine().getStatusCode() != 200){
-			throw new Exception("Did not create monitor");
-		}
-	}
 }

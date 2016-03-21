@@ -16,6 +16,7 @@ import com.metrics.daemon.pojo.StagedMetric;
 @AllArgsConstructor
 public class ClientMinuteRunnable implements Runnable {
 	private final String logDirectoryName;
+	private final String apiKey;
 
 	@Override
 	public void run() {
@@ -23,7 +24,7 @@ public class ClientMinuteRunnable implements Runnable {
 		List<StagedMetric> stagedMetricList = ClientLogScanner.parseClientLog(logDirectoryName);
 		
 		MetricClient client = new MetricClient();
-		client.createMetric(stagedMetricList);
+		client.createMetric(stagedMetricList, apiKey);
 		for (StagedMetric metric : stagedMetricList) {
 			System.out.println(metric);
 		}

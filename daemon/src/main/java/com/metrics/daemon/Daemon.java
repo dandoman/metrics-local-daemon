@@ -16,24 +16,26 @@ public class Daemon {
 	private final TimeUnit timeUnit = TimeUnit.SECONDS;
 	private final long logParseTime;
 	private final String logDirectory;
+	private final String apiKey;
 	
-	public Daemon(long logParseTime, String logDirectory) {
+	public Daemon(long logParseTime, String logDirectory, String apiKey) {
 		this.logParseTime = logParseTime;
 		this.logDirectory = logDirectory;
+		this.apiKey = apiKey;
 		scheduledDaemonExecutor = Executors.newSingleThreadScheduledExecutor();
 	}
 	
 	//Default daemon runs every 60 seconds
 	//Should be 5 minutes eventually
-	public Daemon(String logDirectory) {
-		 this(60, logDirectory);
+	public Daemon(String logDirectory, String apiKey) {
+		 this(60, logDirectory, apiKey);
 	}
 	
 	public void start() throws InterruptedException, ExecutionException {
 		long initialTime = 60 - DateTime.now().getSecondOfMinute();
 		//TODO use clientlogstate access for optimized checking of file names
 		ClientLogStateAccess.init(logDirectory);
-		scheduledDaemonExecutor.scheduleWithFixedDelay(new ClientMinuteRunnable(logDirectory), 
+		scheduledDaemonExecutor.scheduleWithFixedDelay(new ClientMinuteRunnable(logDirectory, apiKey), 
 				initialTime, logParseTime, timeUnit);
 	}
 	
@@ -44,7 +46,13 @@ public class Daemon {
 	}
 
 	public static void main(String[] args) throws InterruptedException, ExecutionException {
-		Daemon d = new Daemon(10, "/var/metrics");
+		if(args.length != 1) {
+			System.out.println("Need to pass in the api key");
+			System.exit(0);
+		}
+		String apiKey = args[0];
+		System.out.println("Staring up daemon for api key: " + apiKey);
+		Daemon d = new Daemon(10, "/var/metrics", apiKey);
 		d.start();
 	}
 }
